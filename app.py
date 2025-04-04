@@ -11,7 +11,7 @@ from langchain_huggingface import HuggingFacePipeline
 import torch
 _ = torch.classes
 
-# ① 본인의 API Key 입력
+# API Key 입력
 api_key = "up_P5UsiWxIdS9sAyUCQmc9R5krA9dQr"
 url = "https://api.upstage.ai/v1/document-ai/document-parse"
 
@@ -21,11 +21,11 @@ headers = {
 
 pdf_files = ["삼성.pdf", "하나.pdf", "토스.pdf", "우리.pdf"]
 
-# 🔹 저장할 폴더 경로 (card-rag-app/parsed_html)
+# 저장할 폴더 경로 (card-rag-app/parsed_html)
 save_dir = "parsed_html"
 os.makedirs(save_dir, exist_ok=True)  # 폴더 없으면 자동 생성
 
-# ② 여러 개의 파일을 변환하는 반복문
+# 여러 개의 파일을 변환하는 반복문
 for filename in pdf_files:
     with open(filename, "rb") as file:
         files = {"document": file}
@@ -50,14 +50,13 @@ for filename in pdf_files:
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(html_text)
 
-# ✅ HuggingFace 임베딩 모델 로드 (무료)
 embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
-# 🔹 1. HTML 파일이 저장된 폴더
+# HTML 파일이 저장된 폴더
 html_dir = "parsed_html"
 chunks = []
 
-# 🔹 2. HTML 파일 읽고 텍스트 분할
+# HTML 파일 읽고 텍스트 분할
 for filename in os.listdir(html_dir):
     if filename.endswith(".html"):
         path = os.path.join(html_dir, filename)
@@ -70,7 +69,7 @@ for filename in os.listdir(html_dir):
         print(f"✅ {filename}: {len(card_chunks)}개 chunk 생성됨")
         chunks.extend(card_chunks)
 
-chunks = chunks[:20]  # 🚨 테스트용으로 20개만 사용
+chunks = chunks[:20]
 
 if not chunks:
     raise ValueError("❗ HTML에서 추출된 텍스트가 없습니다.")
@@ -79,11 +78,11 @@ vector_db = FAISS.from_texts(chunks, embedding_model)
 vector_db.save_local("vector_db")
 print("✅ 벡터 DB 저장 완료! → vector_db/")
 
-# ✅ 1. 임베딩 모델 + 벡터 DB 로드
+# 임베딩 모델 및 벡터 DB 로드
 embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 vector_db = FAISS.load_local("vector_db", embedding_model, allow_dangerous_deserialization=True)
 
-# ✅ 2. HuggingFace LLM 파이프라인 (flan-t5-base)
+# HuggingFace LLM 파이프라인 (flan-t5-base)
 model_name = "google/flan-t5-base"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
@@ -108,7 +107,7 @@ for doc in result["source_documents"]:
 
 # --- Streamlit 앱 시작 ---
 st.set_page_config(page_title="카드 추천 챗봇")
-st.title("💳 대학생 대상 카드 추천 챗봇")
+st.title("💳 대학생 대상 카드 추천 AI 챗봇")
 st.markdown("카드 약관 기반으로 혜택을 분석해주는 AI 챗봇입니다.")
 
 user_query = st.text_input("❓ 궁금한 점을 입력하세요", placeholder="예: 배달앱 할인 카드 뭐 있어?")
